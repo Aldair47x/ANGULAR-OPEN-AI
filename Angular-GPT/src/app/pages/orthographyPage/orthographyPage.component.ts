@@ -8,6 +8,7 @@ import { TextMessageBoxSelectComponent } from '@components/text-boxes/textMessag
 import { TypingLoaderComponent } from '@components/typingLoader/typingLoader.component';
 import { iMessage } from '@interfaces/message.interface';
 import { OpenAIService } from 'app/services/openai.service';
+import { GptMessageOrthohraphyComponent } from "../../layout/gptMessageOrthohraphy/gptMessageOrthohraphy.component";
 
 
 @Component({
@@ -20,18 +21,44 @@ import { OpenAIService } from 'app/services/openai.service';
     TypingLoaderComponent,
     TextMessageBoxComponent,
     TextMessageBoxFileComponent,
-    TextMessageBoxSelectComponent
-  ],
+    TextMessageBoxSelectComponent,
+    GptMessageOrthohraphyComponent
+],
   templateUrl: './orthographyPage.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export  default class OrthographyPageComponent { 
-  public messages = signal<iMessage[]>([{ isGpt: true, text: 'Hello!' }]);
+export  default class OrthographyPageComponent {
+  public messages = signal<iMessage[]>([{ isGpt: false, text: 'Hello!' }]);
   public isTyping = signal<boolean>(false);
   public openAiService = inject( OpenAIService );
 
   handleMessage(message: any) {
-    console.log(message, 'message');
+    this.isTyping.set(true);
+    this.messages.update((messages) => [...messages, { isGpt: false, text: message }]);
+    this.openAiService.checkOrthography(message).subscribe({
+      next: (response) => {
+        console.log(response, 'response');
+        this.isTyping.set(false);
+        if (response.ok) {
+          this.messages.update((messages) => [
+            ...messages,
+            { isGpt: true, text: response.message, userScore: response.userScore, errors: response.errors },
+          ]);
+        } else {
+          this.messages.update((messages) => [
+            ...messages,
+            { isGpt: true, text: `Error: ${response.error}` },
+          ]);
+        }
+      },
+      error: (error) => {
+        this.isTyping.set(false);
+        this.messages.update((messages) => [
+          ...messages,
+          { isGpt: true, text: `Error: ${error.message}` },
+        ]);
+      },
+    });
   }
 
   handleFile(message: any) {

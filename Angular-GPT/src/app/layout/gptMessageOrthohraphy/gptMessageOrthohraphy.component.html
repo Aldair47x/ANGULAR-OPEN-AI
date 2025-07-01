@@ -1,0 +1,26 @@
+<div class="col-start-1 col-end-9 p-3 rounded-lg">
+  <div class="flex flex-row items-start">
+    <div class="flex items-center justify-center h-10 w-10 rounded-full bg-green-600 flex-shrink">
+      G
+    </div>
+
+    <div class="relative ml-3 text-sm bg-black bg-opacity-25 pt-3 pb-2 px-4 shadow rounded-xl">
+      <h3 class="text-white text-lg font-semibold">
+        <span class="text-green-500">Score:</span> {{ userScore }}%
+      </h3>
+      <p class="text-white text-sm">
+        <span class="text-green-500">Message:</span> {{ message }}
+      </p>
+      @if(errors && errors.length > 0) {
+        <ul class="mt-2">
+          @for (error of errors; track $index) {
+            <li class="text-red-500 text-sm">{{ error }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="text-green-500 text-sm">No errors found.</p>
+      }
+    </div>
+  </div>
+
+</div>
